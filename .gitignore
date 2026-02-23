@@ -1,0 +1,85 @@
+# ---------------------------------------
+# Python cache and compiled files
+# ---------------------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.dll
+
+# ---------------------------------------
+# Virtual environments
+# ---------------------------------------
+.env
+.venv/
+venv/
+ENV/
+env/
+
+# ---------------------------------------
+# Distribution / packaging
+# ---------------------------------------
+build/
+dist/
+*.egg-info/
+*.egg
+
+# ---------------------------------------
+# Jupyter Notebook cache
+# ---------------------------------------
+.ipynb_checkpoints/
+*.ipynb_out/
+*.nbconvert/
+*checkpoint.ipynb
+
+# Ignore any subfolder checkpoints
+**/.ipynb_checkpoints
+**/*-checkpoint.ipynb
+
+# ---------------------------------------
+# Logs and debug
+# ---------------------------------------
+Logs/
+*.log
+*.txt~
+
+# ---------------------------------------
+# Simulation output or generated data
+# (TracePro, scripts, temporary files)
+# ---------------------------------------
+resultados/
+output/
+data/
+tmp/
+temp/
+*.dat
+*.csv
+*.json
+*.bak
+*.tmp
+
+# ---------------------------------------
+# OS-specific junk
+# ---------------------------------------
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+
+# ---------------------------------------
+# Editor / IDE folders
+# ---------------------------------------
+.vscode/
+.vscode/*
+.idea/
+*.swp
+*.swo

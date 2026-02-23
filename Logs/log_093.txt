@@ -1,5 +1,0 @@
-[2026-02-11 10:01:24.505 Information]:[TracePro] Common Dependency Injection Initialized
-[2026-02-11 15:38:39.949 Information]:[TracePro] Common Dependency Injection Initialized
-[2026-02-11 15:47:17.418 Information]:[TracePro] Common Dependency Injection Initialized
-[2026-02-11 15:49:13.803 Information]:[TracePro] Common Dependency Injection Initialized
-[2026-02-13 16:23:26.157 Information]:[TracePro] Common Dependency Injection Initialized
