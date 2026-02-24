@@ -239,6 +239,57 @@ class TP_app:
 
         self.add_function(get_id + text)
 
+    
+    def ray_sorting(self, sorting_type: int, view: int, object_name: str = None, surface_num: int = None):
+        """
+        Once the rays have been traced, this function selects which rays will be shown.
+        If "sorting_type = 1", a surface must be selected.
+        By default ("sorting_type = 0"), all rays will be shown.
+        
+        TODO:
+            - Views 2, 3, and 4 currently only display the irradiance map.
+            Check whether unit definition and source specification are required.
+
+        Args:
+            sorting_type (int): Type of ray sorting.
+                - 0 = all rays
+                - 1 = selected surface
+                - 2 = specular
+                - 3 = single surface scatter
+                - 4 = multiple surface scatter
+                - 5 = single bulk scatter
+                - 6 = multiple bulk scatter
+                - 7 = single diffraction
+                - 8 = multiple diffraction
+
+            view (int): Type of view applied to the ray sorting.
+                - 0 = model view
+                - 1 = irradiance map
+                - 2 = incident ray table
+                - 3 = ray history table
+                - 4 = polarization map
+
+            object_name (str, optional): Name of the object containing the surface.
+            surface_num (int, optional): Surface index within the object (0 to n).
+
+        Raises:
+            ValueError: If "sorting_type = 1` but no surface_num is provided"
+        """
+
+        if sorting_type == 1:
+            if surface_num is None or object_name is None:
+                raise ValueError("You must select a surface for sorting_type = 1.")
+            self.select_detection_surface(object_name=object_name, surface_num=surface_num)
+
+        text = f"""
+        
+        ; Ray sorting:
+        (analysis:ray-sorting {sorting_type} 0 {view})
+        """
+
+        self.add_function(text)
+
+
 
     def apply_property(self, property: tuple[str, str], object_name: str, surface_num: int = -1 ):
 
