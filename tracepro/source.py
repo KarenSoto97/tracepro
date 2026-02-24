@@ -180,16 +180,16 @@ class Source:
 
             text = f"""
 
-            ; New surface source
-            (property:apply-{emission_type}-surface-source (tools:face-in-body {surface_num} {object_name}) {emission} {flux} {ang_dist} {suppress_rays} {min_rays})
-            (raytrace:set-surface-source-units-{units} (tools:face-in-body {surface_num} {object_name}))"""
+        ; New surface source
+        (property:apply-{emission_type}-surface-source (tools:face-in-body {surface_num} {object_name}) {emission} {flux} {ang_dist} {suppress_rays} {min_rays})
+        (raytrace:set-surface-source-units-{units} (tools:face-in-body {surface_num} {object_name}))"""
         else:
 
             text = f"""
 
-            ; New surface source
-            (property:apply-surface-source-property (tools:face-in-body {surface_num} {object_name}) "{emission_type} sources" "{ang_dist}-degree Half Angle" {flux} {min_rays} 1 #f)
-            (raytrace:set-surface-source-units-{units} (tools:face-in-body {surface_num} {object_name}))"""
+        ; New surface source
+        (property:apply-surface-source-property (tools:face-in-body {surface_num} {object_name}) "{emission_type} sources" "{ang_dist}-degree Half Angle" {flux} {min_rays} 1 #f)
+        (raytrace:set-surface-source-units-{units} (tools:face-in-body {surface_num} {object_name}))"""
 
         return text
 
@@ -210,18 +210,18 @@ class Source:
 
             text = f"""
             
-            ; Wavelength definition:
-            (define wvList (list (list {wavelength[0]} {wavelength[1]})))
-            (raytrace:set-wavelengths wvList {self.source_ID})"""
+        ; Wavelength definition:
+        (define wvList (list (list {wavelength[0]} {wavelength[1]})))
+        (raytrace:set-wavelengths wvList {self.source_ID})"""
     
         elif "Surface" in self.source_ID:
 
             text = f"""
             
-            ; Wavelength definition:
-            (raytrace:set-surface-source-discrete-wavelength "{self.source_ID}")
-            (raytrace:clear-wavelengths (raytrace:source-get-by-name "{self.source_ID}"))
-            (raytrace:set-wavelengths (list (list {wavelength[0]} {wavelength[1]})) (raytrace:source-get-by-name "{self.source_ID}"))"""
+        ; Wavelength definition:
+        (raytrace:set-surface-source-discrete-wavelength "{self.source_ID}")
+        (raytrace:clear-wavelengths (raytrace:source-get-by-name "{self.source_ID}"))
+        (raytrace:set-wavelengths (list (list {wavelength[0]} {wavelength[1]})) (raytrace:source-get-by-name "{self.source_ID}"))"""
 
         return text
     

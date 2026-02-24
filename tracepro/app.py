@@ -241,6 +241,7 @@ class TP_app:
 
     
     def ray_sorting(self, sorting_type: int, view: int, object_name: str = None, surface_num: int = None):
+
         """
         Once the rays have been traced, this function selects which rays will be shown.
         If "sorting_type = 1", a surface must be selected.
@@ -282,15 +283,61 @@ class TP_app:
             self.select_detection_surface(object_name=object_name, surface_num=surface_num)
 
         text = f"""
-        
+
         ; Ray sorting:
-        (analysis:ray-sorting {sorting_type} 0 {view})
-        """
+        (analysis:ray-sorting {sorting_type} 0 {view})"""
 
         self.add_function(text)
 
+    def path_sorting(self):
+        
+        """
+        Enables the path-sorting table in the configuration.
+        """
 
+        text = """
 
+        ; Path sorting:
+        (analysis:path-sort)"""
+
+        self.add_function(text)
+
+    def display_selected_path(self, path_num: int, irradiance_map : bool = False):
+
+        
+        """
+            Displays the selected path from the path sorting table.
+
+            TODO:
+                - Check whether it's necessary to allow visualization of multiple paths 
+                at once (e.g., passing a list of path numbers).
+                - Currently works for a single use, but inside a loop the irradiance map 
+                shown is always the total one.
+
+            Args:
+                path_num (int): Path number to display from the path sorting table.
+                irradiance_map (bool): If True, also shows the irradiance map using the 
+                    currently selected settings.
+        """
+
+        text_1 = ""
+
+        text = f"""
+
+        ;Activates the display of selected paths feature.
+        (analysis:display-selected-paths #t)
+        ;Select path form path sort table window and update model view
+        (analysis:update-selected-paths (list {path_num}))"""
+
+        if irradiance_map:
+
+            text_1 = """
+        ;Irradiance_map
+        (analysis:irradiance)"""
+
+        self.add_function(text + text_1)
+
+        
     def apply_property(self, property: tuple[str, str], object_name: str, surface_num: int = -1 ):
 
         """
@@ -311,14 +358,14 @@ class TP_app:
 
             text = f"""
             
-            ; Apply property:
-            (property:apply-surface (tools:face-in-body {surface_num} (model:get-object-by-number id)) (list "{property[1].capitalize()}" "{property[0].capitalize()}"))"""
+        ; Apply property:
+        (property:apply-surface (tools:face-in-body {surface_num} (model:get-object-by-number id)) (list "{property[1].capitalize()}" "{property[0].capitalize()}"))"""
         else:
 
             text = f"""
             
-            ; Apply property:
-            (property:apply-surface (model:get-object-by-number id) (list "{property[1].capitalize()}" "{property[0].capitalize()}"))"""
+        ; Apply property:
+        (property:apply-surface (model:get-object-by-number id) (list "{property[1].capitalize()}" "{property[0].capitalize()}"))"""
 
         self.add_function(get_id + text)
 
@@ -371,14 +418,14 @@ class TP_app:
 
             text = f"""
             
-            ; Apply color:
-            (property:apply-color (tools:face-in-body {surface_num} (model:get-object-by-number id)) {color[0]} {color[1]} {color[2]} {transparency} 0.5 0.5 0.5)"""
+        ; Apply color:
+        (property:apply-color (tools:face-in-body {surface_num} (model:get-object-by-number id)) {color[0]} {color[1]} {color[2]} {transparency} 0.5 0.5 0.5)"""
         else:
 
             text = f"""
             
-            ; Apply color:
-            (property:apply-color (model:get-object-by-number id) {color[0]} {color[1]} {color[2]} {transparency} 0.5 0.5 0.5)"""
+        ; Apply color:
+        (property:apply-color (model:get-object-by-number id) {color[0]} {color[1]} {color[2]} {transparency} 0.5 0.5 0.5)"""
 
         self.add_function(get_id + text)
 

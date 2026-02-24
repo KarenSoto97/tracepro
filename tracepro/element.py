@@ -80,20 +80,20 @@ class Element:
 
             text = f"""
 
-            ; New block:
-            (define {self.name}
-            (geometry:primitive-block "{self.name}" {dimensions[0]} {dimensions[1]} {dimensions[2]} (position3d {center[0]} {center[1]} {center[2]}) "{orientation_method[0]}" 
-            {orientation_method[1][0]} {orientation_method[1][1]} {orientation_method[1][2]} {degrees}))"""
+        ; New block:
+        (define {self.name}
+        (geometry:primitive-block "{self.name}" {dimensions[0]} {dimensions[1]} {dimensions[2]} (position3d {center[0]} {center[1]} {center[2]}) "{orientation_method[0]}" 
+        {orientation_method[1][0]} {orientation_method[1][1]} {orientation_method[1][2]} {degrees}))"""
 
         elif orientation_method[0] == "vectors":
 
             text = f"""
 
-            ; New block:
-            (define {self.name}
-            (geometry:primitive-block "{self.name}" {dimensions[0]} {dimensions[1]} {dimensions[2]} (position3d {center[0]} {center[1]} {center[2]}) "{orientation_method[0]}" 
-            (vector3d {orientation_method[1][0]} {orientation_method[1][1]} {orientation_method[1][2]}) (vector3d {orientation_method[2][0]} {orientation_method[2][1]} {orientation_method[2][2]}) 
-            {degrees}))"""
+        ; New block:
+        (define {self.name}
+        (geometry:primitive-block "{self.name}" {dimensions[0]} {dimensions[1]} {dimensions[2]} (position3d {center[0]} {center[1]} {center[2]}) "{orientation_method[0]}" 
+        (vector3d {orientation_method[1][0]} {orientation_method[1][1]} {orientation_method[1][2]}) (vector3d {orientation_method[2][0]} {orientation_method[2][1]} {orientation_method[2][2]}) 
+        {degrees}))"""
             
         return text
     
