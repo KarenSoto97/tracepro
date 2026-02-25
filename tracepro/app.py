@@ -2,6 +2,7 @@
 import win32com.client as win32
 import os
 import numpy as np
+from pathlib import Path
 
 
 class TP_app:
@@ -289,18 +290,33 @@ class TP_app:
 
         self.add_function(text)
 
-    def path_sorting(self):
+    def path_sorting(self, save: bool = False, saving_path: str = None, file_name: str = "Path_sorting_table"):
         
         """
-        Enables the path-sorting table in the configuration.
+            Enables the path‑sorting table in the configuration.  
+            If "save = True", the table will be exported as a .txt file.
+
+            Args:
+                save (bool): If True, the path‑sorting table will be saved. Default is False.
+                saving_path (str): Directory where the .txt file will be stored.
+                file_name (str): Name of the exported .txt file (without extension).
         """
 
-        text = """
+        text_1 = ""
+
+        if save and saving_path and os.path.exists(saving_path):
+            save_path = saving_path.replace("\\", "/")
+            path = f"{save_path}/{file_name}.txt"
+            text_1 = f'(analysis:path-sort-save "{path}")'
+        elif save:
+            raise ValueError('You must introduce a valid path.')
+
+        text = f"""
 
         ; Path sorting:
         (analysis:path-sort)"""
 
-        self.add_function(text)
+        self.add_function(text + text_1)
 
     def display_selected_path(self, path_num: int, irradiance_map : bool = False):
 
