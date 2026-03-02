@@ -143,6 +143,55 @@ class Source:
 
         return text
     
+
+    def grid_rotation(self, angle: int, axis: int, rotation_point: tuple[float, float, float], object_ref: bool):
+
+        """
+        Rotate the selected grid source around a specified axis.
+
+        The rotation is defined by:
+        - the direction of the rotational axis (controlled by axis_direction),
+        - and a point through which that axis passes (rotation_point or the object reference origin).
+
+        The rotational axis will pass through the specified rotation_point. If object_ref is True,
+        the rotation_point is ignored and the axis will pass through the origin of the object
+        reference system. Note that object_ref only affects the position of the axis, not its direction.
+
+        Args:
+            angle (float): Angle of rotation about the axis in degrees.
+            axis_type (int): Controls the direction of the rotational axis.
+                0: rotation about global X axis.
+                1: rotation about global Y axis.
+                2: rotation about global Z axis.
+            rotation_point (float, float, float): Point through which the rotational axis passes. 
+            This parameter is ignored if object_ref is True.
+            object_ref (bool): If True, the rotational axis passes through the origin of the object reference system, resulting in a rotation about the object itself,
+            independently of its position in the global coordinate system.
+        """
+
+        if axis == 0:
+            direction = (1, 0, 0)
+        elif axis == 1:
+            direction = (0, 1, 0)
+        elif axis == 2:
+            direction = (0, 0, 1)
+
+        if object_ref:
+            object_ref = "#t"
+        else:
+            object_ref = "#f"
+
+        text = f"""
+
+        ; Grid source rotation:
+        (edit:rotate-grid-source "{self.name}" {rotation_point[0]} {rotation_point[1]} {rotation_point[2]} {direction[0]} {direction[1]} {direction[2]} 
+        {angle} #f {object_ref})"""
+
+        return text
+
+
+
+    
     def add_surface_source(self, object_name: str, surface_num: int, emission_type: str, emission: float, units: str, ang_dist: int, flux: int):
 
         """

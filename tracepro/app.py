@@ -506,7 +506,7 @@ class TP_app:
         reference system. Note that object_ref only affects the position of the axis, not its direction.
 
         Args:
-            bject_name (str): Name of the object.
+            object_name (str): Name of the object.
             angle (float): Angle of rotation about the axis. The angle is interpreted as degrees or radians depending on the value of degrees.
             axis_type (int): Controls the direction of the rotational axis.
                 0: rotation about global X axis.
