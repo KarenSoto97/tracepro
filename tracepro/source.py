@@ -85,7 +85,7 @@ class Source:
                 - "random":
                     pattern1 (float): Total rays
                     pattern2 (float): ""
-            flux (float): Grid source flux.
+            flux (float): Grid source flux. Units depend on 'units' and 'emission_type'.
             units (str): Emission units ("photometric" or "radiometric").
             emission_type (int): Emission mode:
                 0: Flux per ray (W / lm)
@@ -98,18 +98,27 @@ class Source:
             text (str): Scheme code fragment to append to the macro file.
         """
 
+        if emission_type == 0:
+            text_1 = f"""(raytrace:set-grid-flux-per-ray {flux} {self.source_ID})"""
+        elif emission_type == 1:
+            text_1 = f"""(raytrace:set-grid-total-flux {flux} {self.source_ID})"""
+        elif emission_type == 2:
+            text_1 = f"""(raytrace:set-grid-irradiance {flux} {self.source_ID})"""
+        else:
+            raise ValueError(f"Invalid emission_type '{emission_type}'. "
+        "Valid options are: 0 (flux per ray), 1 (total flux), 2 (irradiance).")
+
         text = f"""
         
         ; Modifications of the grid source:
         (raytrace:set-grid-boundary-{boundary_type} {boundary1} {boundary2} {self.source_ID})
         (raytrace:set-grid-pattern-{pattern_type} {pattern1} {pattern2} {flux} {self.source_ID})
-        (raytrace:set-grid-total-flux {flux} {self.source_ID})
-        (raytrace:set-grid-units-{units} {self.source_ID})
         (raytrace:set-grid-emission-type {emission_type} {self.source_ID})
+        (raytrace:set-grid-units-{units} {self.source_ID})
         (raytrace:set-grid-origin (position3d {position[0]} {position[1]} {position[2]}) {self.source_ID})
         (raytrace:set-grid-orientation-direction-vectors (vector3d {normal_vector[0]} {normal_vector[1]} {normal_vector[2]}) (vector3d {up_vector[0]} {up_vector[1]} {up_vector[2]}))"""
 
-        return text
+        return text + text_1
     
     def grid_beam_setup(self, spatial_profile: tuple[str, float, float], angular_profile: tuple[str, float, float], units: str):
 
@@ -123,7 +132,7 @@ class Source:
                 Example: 
                  ("uniform", "", "")
                  ("gaussian", 0.5, 0.2)
-            anular_profile (str, int, int): It can be "uniform", "gaussian", "lambertian" or "solar".
+            angular_profile (str, int, int): It can be "uniform", "gaussian", "lambertian" or "solar".
              - uniform: ("uniform", half angle, "")
              - gaussian: ("gaussian", half angle x, "half angle y)
              - lambertian: ("lambertian", " half angle)
@@ -188,8 +197,6 @@ class Source:
         {angle} #f {object_ref})"""
 
         return text
-
-
 
     
     def add_surface_source(self, object_name: str, surface_num: int, emission_type: str, emission: float, units: str, ang_dist: int, flux: int):
