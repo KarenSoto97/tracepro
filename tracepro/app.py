@@ -48,7 +48,6 @@ class TP_app:
 
     
     def show_graphics_window(self):
-
         
         """
         Ensures that the TracePro user interface becomes visible. When a COM object
@@ -318,8 +317,61 @@ class TP_app:
 
         self.add_function(text + text_1)
 
-    def display_selected_path(self, path_num: int, irradiance_map : bool = False):
+    
+    def path_sort_filter(self, filter_name: str, objects: list[tuple[str, int]], interaction: list[int]):
 
+        """
+        Creates a path sort filter and its corresponding rows for the path sorting table.
+
+        Args:
+            filter_name (str): Name of the filter to be created.
+            objects (list[tuple[str, int]]): List of tuples (object_name, surface_number) defining the objects and their corresponding surfaces that interact with light.
+            intercepts (list[int]): List of interaction types corresponding 1‑to‑1 with the elements in 'objects'.
+                Interaction codes:
+                0  = missing rays           | 1  = any interaction        | 2  = specular reflection
+                3  = specular transmission  | 4  = random reflection      | 5  = random transmission
+                6  = imperfect reflection   | 7  = imperfect transmission | 8  = diffuse reflection
+                9  = imperfect diffuse refl | 10 = random diffuse trans   | 11 = imperfect diffuse trans
+                12 = random volume scatter  | 13 = imperfect vol. scatter | 14 = GRIN transmission
+                15 = reptile transmission   | 16 = undefined interaction
+
+        Warnings:
+            This function creates the filter but does not apply it.
+            Applying filters is currently only supported through the GUI.
+
+        """
+
+        assert len(objects) == len (interaction)
+        assert len(objects) > 0
+
+        text = ""
+
+        get_id = self.__get_id(object_name=objects[0][0])
+
+        text_1 = f"""
+
+        ; Path sort filter:
+        (analysis:add-path-sort-filter "{filter_name}" (model:get-object-by-number id) (tools:face-in-body {objects[0][1]} (model:get-object-by-number id)) {interaction[0]})"""
+
+        text = get_id + text_1
+
+        if len(objects) > 1:
+
+            for i, (object_name, face_num) in enumerate(objects[1:], start=1):
+
+                get_id = self.__get_id(object_name=object_name)
+
+                text_1 = f"""
+
+        ; Path sort filter:
+        (analysis:add-path-sort-filter-row "{filter_name}" (model:get-object-by-number id) (tools:face-in-body {face_num} (model:get-object-by-number id)) {interaction[i]})"""
+
+                text += get_id + text_1
+
+        self.add_function(text)
+    
+
+    def display_selected_path(self, path_num: int, irradiance_map : bool = False):
         
         """
             Displays the selected path from the path sorting table.
@@ -550,11 +602,16 @@ class TP_app:
 
     def txt_map2array(self, txt_path: str, num_files: int, file_name: str | list):
 
-        # TO DO, solo funcion asi se ha hecho smooth, si no, hay valores que no detecta. 128 es la resolución definida por defecto, no le he puesto más. 
-
         """
-        
         Load irradiance map data stored in one or more .txt files and convert it into NumPy array(s).
+
+        By default, the irradiance map resolution is assumed to be 128×128, which is the system’s
+        current fixed output resolution.
+
+        TODO:
+            - The current implementation uses smoothing because otherwise some values are not
+            detected correctly. Improve robustness so smoothing is not required.
+            - Allow customizable resolution instead of assuming the fixed 128×128 grid.
  
         Args:
             txt_path (str): Path to the directory containing the .txt file(s).

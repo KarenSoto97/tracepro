@@ -122,8 +122,6 @@ class Source:
     
     def grid_beam_setup(self, spatial_profile: tuple[str, float, float], angular_profile: tuple[str, float, float], units: str):
 
-        # TO DO: Falta lo de los pesos pero no se si es necesario. 
-
         """
         Modifies the grid source beam setup.
 
