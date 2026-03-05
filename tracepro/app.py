@@ -84,13 +84,14 @@ class TP_app:
         self.add_function(text)
 
 
-    def execute(self, graphic_window: bool = False):
+    def execute(self, graphic_window: bool = False, delete_macro: bool = True):
      
         """
         Executes TracePro using the generated macro file and the TracePro COM.
 
         Args:
             graphic_window (bool): If True, the TracePro graphical user interface is made visible before executing the macro. 
+            delete_macro (bool): If True, the macro scheme code will be deleted.
 
         Returns:
             result (str): Result returned by TracePro after executing the Scheme macro
@@ -119,6 +120,9 @@ class TP_app:
             print(f'Error: {result}')
         else:
             print(f'{index} parentheses missing')
+
+        if delete_macro:
+            self.delete_macro()
 
         return result
 
