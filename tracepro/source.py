@@ -17,18 +17,21 @@ class Source:
     @classmethod
     def raytrace(cls, analysis_mode: bool=True):
 
-        # TO DO: SI LO QUEREMOS EN MODO SIMULACIÓN SE DEBE AÑADIR UNA SUPERFICIE DE SALIDA. 
-
         """
         Traces rays from all discrete sources in the active model.
 
+        TODO:
+            If simulation mode is required, an output surface must be added to the system
+            in order to properly perform the propagation.
+
         Args:
-            analysis_mode (bool): If True sets analysis mode to "on"; otherwise sets it to "off" while maintaining simulation mode.
+            analysis_mode (bool): If True sets analysis mode to "on"; otherwise sets it to
+                "off" while maintaining simulation mode.
 
         Returns:
             text (str): Scheme code fragment to append to the macro file.
         """
-
+        
         if analysis_mode:
             analysis_mode = "on"
         else:

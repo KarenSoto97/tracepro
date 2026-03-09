@@ -24,6 +24,77 @@ class TP_app:
         self.macro = f"{macro_path}/{macro_name}.scm"
         self.tp = win32.Dispatch("TracePro.TraceProXP")
 
+    @classmethod
+    def txt_map2array(cls, txt_path: str, num_files: int, file_name: str | list):
+
+        """
+        Load irradiance map data stored in one or more .txt files and convert it into NumPy array(s).
+
+        By default, the irradiance map resolution is assumed to be 128×128, which is the system’s
+        current fixed output resolution.
+
+        TODO:
+            - The current implementation uses smoothing because otherwise some values are not
+            detected correctly. Improve robustness so smoothing is not required.
+            - Allow customizable resolution instead of assuming the fixed 128×128 grid.
+ 
+        Args:
+            txt_path (str): Path to the directory containing the .txt file(s).
+            num_file (int): Number of files to load. If 1, a 2D array is returned. If greater than 1, a 3D array is returned
+            file_name (str): Name of the file (without extension) if num_files == 1, or a list of file names if num_files > 
+
+        Returns:
+            irradiance_maps (np.ndarray):
+            - Shape (128, 128) if num_files == 1
+            - Shape (128, 128, num_files) if num_files > 1
+        """
+
+        def first_line_num_data(lines: list):
+
+            """
+            Find the index of the first line containing numerical data.
+
+            Args:
+                lines (list): List of lines read from the text file.
+
+            Returns:
+                int | None: Index of the first data line, or None if not found.
+            """
+
+            for i, linea in enumerate(lines):
+                if linea.strip() and linea.lstrip()[0].isdigit():
+                    return  i
+            return None
+            
+        if num_files == 1:
+
+            irradiance_map = np.zeros([128, 128])
+
+            with open(f"{txt_path}/{file_name}.txt", "r") as f:
+                lineas = f.readlines()
+
+            start_idx = first_line_num_data(lineas)
+            data = np.loadtxt(lineas[start_idx:])
+
+            irradiance_map[:,:] = data
+
+            return irradiance_map
+        
+        elif num_files > 1:
+
+            irradiance_maps = np.zeros([128, 128, num_files])
+
+            for i, file in enumerate(file_name):
+                with open(f"{txt_path}/{file}.txt", "r") as f:
+                    lineas = f.readlines()
+
+                start_idx = first_line_num_data(lineas)
+                data = np.loadtxt(lineas[start_idx:])
+
+                irradiance_maps[:, :, i] = data
+            
+            return irradiance_maps
+
     def delete_macro(self):
 
         """
@@ -602,78 +673,6 @@ class TP_app:
          {custom_axis[2]}) (position3d {rotation_point[0]} {rotation_point[1]} {rotation_point[2]}))""" 
         
         self.add_function(get_id + text)
-
-
-    def txt_map2array(self, txt_path: str, num_files: int, file_name: str | list):
-
-        """
-        Load irradiance map data stored in one or more .txt files and convert it into NumPy array(s).
-
-        By default, the irradiance map resolution is assumed to be 128×128, which is the system’s
-        current fixed output resolution.
-
-        TODO:
-            - The current implementation uses smoothing because otherwise some values are not
-            detected correctly. Improve robustness so smoothing is not required.
-            - Allow customizable resolution instead of assuming the fixed 128×128 grid.
- 
-        Args:
-            txt_path (str): Path to the directory containing the .txt file(s).
-            num_file (int): Number of files to load. If 1, a 2D array is returned. If greater than 1, a 3D array is returned
-            file_name (str): Name of the file (without extension) if num_files == 1, or a list of file names if num_files > 
-
-        Returns:
-            irradiance_maps (np.ndarray):
-            - Shape (128, 128) if num_files == 1
-            - Shape (128, 128, num_files) if num_files > 1
-        """
-
-        def first_line_num_data(lines: list):
-
-            """
-            Find the index of the first line containing numerical data.
-
-            Args:
-                lines (list): List of lines read from the text file.
-
-            Returns:
-                int | None: Index of the first data line, or None if not found.
-            """
-
-            for i, linea in enumerate(lines):
-                if linea.strip() and linea.lstrip()[0].isdigit():
-                    return  i
-            return None
-            
-        if num_files == 1:
-
-            irradiance_map = np.zeros([128, 128])
-
-            with open(f"{txt_path}/{file_name}.txt", "r") as f:
-                lineas = f.readlines()
-
-            start_idx = first_line_num_data(lineas)
-            data = np.loadtxt(lineas[start_idx:])
-
-            irradiance_map[:,:] = data
-
-            return irradiance_map
-        
-        elif num_files > 1:
-
-            irradiance_maps = np.zeros([128, 128, num_files])
-
-            for i, file in enumerate(file_name):
-                with open(f"{txt_path}/{file}.txt", "r") as f:
-                    lineas = f.readlines()
-
-                start_idx = first_line_num_data(lineas)
-                data = np.loadtxt(lineas[start_idx:])
-
-                irradiance_maps[:, :, i] = data
-            
-            return irradiance_maps
-
         
 
 
