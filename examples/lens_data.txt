@@ -1,0 +1,1 @@
+{"focal": 40000.0, "heigth": 6000.0, "refractive_index": 1.5, "thickness": 8000.0, "r1": 35000.0, "r2": -43111.11111111111, "s": -50000.0, "sp": 16886.15804744837, "emisor_radius": 2000.0, "emisor_depth": 1000.0, "receptor_length": 1000.0, "receptor_width": 4000.0, "receptor_depth": 4000.0, "q": 0.1038406827880512}

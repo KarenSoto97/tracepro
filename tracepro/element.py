@@ -35,10 +35,7 @@ class Element:
             text (str): Scheme code fragment to append to the macro file.
         """
     
-        if degrees:
-            degrees = '#t'
-        else:
-            degrees = '#f'
+        degrees_flag = '#t' if degrees else '#f'
 
         text = f"""
         
@@ -47,7 +44,7 @@ class Element:
         (geometry:lens-element-2 "{material[0]}" "{material[1]}" {thickness} "{r1[0]}" (list {r1[1]}) "{r2[0]}" (list {r2[1]}) "{aperture[0]}" 
         {aperture[1]} "{obstruction[0]}" (list {obstruction[1]}) (position3d {surf_1_pos[0]} {surf_1_pos[1]} {surf_1_pos[2]}) {surf_1_tilt[0]} 
         {surf_1_tilt[1]} {surf_1_tilt[2]} (position3d {surf_2_pos[0]} {surf_2_pos[1]} {surf_2_pos[2]}) {surf_2_tilt[0]} {surf_2_tilt[1]}
-        {surf_2_tilt[2]} {degrees} "{self.name}"))"""
+        {surf_2_tilt[2]} {degrees_flag} "{self.name}"))"""
         
         return text
     
@@ -71,11 +68,12 @@ class Element:
             text (str): Scheme code fragment to append to the macro file.
         """
         
-        if degrees:
-            degrees = '#t'
-        else:
-            degrees = '#f'
-        
+        degrees_flag = '#t' if degrees else '#f'
+
+        # orientation_method:
+        # ("angles", (rx, ry, rz), "")
+        # ("vectors", (zx, zy, zz), (yx, yy, yz))
+
         if orientation_method[0] == "angles": 
 
             text = f"""
@@ -83,7 +81,7 @@ class Element:
         ; New block:
         (define {self.name}
         (geometry:primitive-block "{self.name}" {dimensions[0]} {dimensions[1]} {dimensions[2]} (position3d {center[0]} {center[1]} {center[2]}) "{orientation_method[0]}" 
-        {orientation_method[1][0]} {orientation_method[1][1]} {orientation_method[1][2]} {degrees}))"""
+        {orientation_method[1][0]} {orientation_method[1][1]} {orientation_method[1][2]} {degrees_flag}))"""
 
         elif orientation_method[0] == "vectors":
 
@@ -93,7 +91,10 @@ class Element:
         (define {self.name}
         (geometry:primitive-block "{self.name}" {dimensions[0]} {dimensions[1]} {dimensions[2]} (position3d {center[0]} {center[1]} {center[2]}) "{orientation_method[0]}" 
         (vector3d {orientation_method[1][0]} {orientation_method[1][1]} {orientation_method[1][2]}) (vector3d {orientation_method[2][0]} {orientation_method[2][1]} {orientation_method[2][2]}) 
-        {degrees}))"""
+        {degrees_flag}))"""
+            
+        else:
+            raise ValueError("orientation_method[0] must be 'angles' or 'vectors'")
             
         return text
     

@@ -1,85 +1,29 @@
-# ---------------------------------------
-# Python cache and compiled files
-# ---------------------------------------
+# Python cache
 __pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-*.so
-*.dll
+*.pyc
 
-# ---------------------------------------
-# Virtual environments
-# ---------------------------------------
-.env
+# Virtual environment (local)
 .venv/
 venv/
-ENV/
-env/
 
-# ---------------------------------------
-# Distribution / packaging
-# ---------------------------------------
-build/
-dist/
-*.egg-info/
-*.egg
-
-# ---------------------------------------
-# Jupyter Notebook cache
-# ---------------------------------------
+# Jupyter
 .ipynb_checkpoints/
-*.ipynb_out/
-*.nbconvert/
-*checkpoint.ipynb
-
-# Ignore any subfolder checkpoints
-**/.ipynb_checkpoints
 **/*-checkpoint.ipynb
 
-# ---------------------------------------
-# Logs and debug
-# ---------------------------------------
-Logs/
-*.log
-*.txt~
-
-# ---------------------------------------
-# Simulation output or generated data
-# (TracePro, scripts, temporary files)
-# ---------------------------------------
-resultados/
+# TracePro generated files and results
 output/
-data/
+resultados/
 tmp/
 temp/
+
 *.dat
 *.csv
 *.json
 *.bak
 *.tmp
 
-# ---------------------------------------
-# OS-specific junk
-# ---------------------------------------
-
-# Windows
-Thumbs.db
-Desktop.ini
-
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
-
-# Linux
-*~
-
-# ---------------------------------------
-# Editor / IDE folders
-# ---------------------------------------
+# Editor / OS noise
 .vscode/
-.vscode/*
 .idea/
-*.swp
-*.swo
+.DS_Store
+Thumbs.db

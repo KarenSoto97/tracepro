@@ -2,8 +2,6 @@
 import win32com.client as win32
 import os
 import numpy as np
-from pathlib import Path
-
 
 class TP_app:
     
@@ -95,7 +93,7 @@ class TP_app:
             
             return irradiance_maps
 
-    def delete_macro(self):
+    def clear_macro(self):
 
         """
         Removes all the scheme code from the macro file. 
@@ -155,14 +153,14 @@ class TP_app:
         self.add_function(text)
 
 
-    def execute(self, graphic_window: bool = False, delete_macro: bool = True):
+    def execute(self, graphic_window: bool = False, clear_macro: bool = True):
      
         """
         Executes TracePro using the generated macro file and the TracePro COM.
 
         Args:
             graphic_window (bool): If True, the TracePro graphical user interface is made visible before executing the macro. 
-            delete_macro (bool): If True, the macro scheme code will be deleted.
+            clear_macro (bool): If True, the macro scheme code will be deleted.
 
         Returns:
             result (str): Result returned by TracePro after executing the Scheme macro
@@ -192,8 +190,8 @@ class TP_app:
         else:
             print(f'{index} parentheses missing')
 
-        if delete_macro:
-            self.delete_macro()
+        if clear_macro:
+            self.clear_macro()
 
         return result
 
@@ -249,7 +247,7 @@ class TP_app:
         text = f"""
 
         ; Get object id
-        (define id (entity:get-id {object_name})))"""
+        (define id (entity:get-id {object_name}))"""
 
         return text
         
@@ -551,24 +549,20 @@ class TP_app:
 
         get_id = self.__get_id(object_name=object_name)
 
-        if transparency:
-            transparency = "#t"
-        else:
-            transparency = "#f"
+        transparency_flag = "#t" if transparency else "#f"
     
-
         if surface_num >= 0:
 
             text = f"""
             
         ; Apply color:
-        (property:apply-color (tools:face-in-body {surface_num} (model:get-object-by-number id)) {color[0]} {color[1]} {color[2]} {transparency} 0.5 0.5 0.5)"""
+        (property:apply-color (tools:face-in-body {surface_num} (model:get-object-by-number id)) {color[0]} {color[1]} {color[2]} {transparency_flag} 0.5 0.5 0.5)"""
         else:
 
             text = f"""
             
         ; Apply color:
-        (property:apply-color (model:get-object-by-number id) {color[0]} {color[1]} {color[2]} {transparency} 0.5 0.5 0.5)"""
+        (property:apply-color (model:get-object-by-number id) {color[0]} {color[1]} {color[2]} {transparency_flag} 0.5 0.5 0.5)"""
 
         self.add_function(get_id + text)
 
@@ -609,7 +603,9 @@ class TP_app:
             mode = "#f"
         elif mode == "relative":
             mode = "#t"
-
+        else:
+            raise ValueError("mode must be 'absolute' or 'relative'")
+   
         text = f"""
             
         ; Move object:
@@ -654,22 +650,16 @@ class TP_app:
 
         get_id = self.__get_id(object_name=object_name)
 
-        if degrees:
-            degrees = "#t"
-        else:
-            degrees = "#f"
+        degrees_flag = "#t" if degrees else "#f" 
 
-        if object_ref:
-            object_ref = "#t"
-        else:
-            object_ref = "#f"
+        object_ref_flag = "#t" if object_ref else "#f"
 
         copy_object = "#f"
 
         text = f"""
             
         ; Rotate object:
-        (edit:rotate-objects (model:get-object-by-number id) {angle} {axis_type} {object_ref} {copy_object} {degrees} (vector3d {custom_axis[0]} {custom_axis[1]}
+        (edit:rotate-objects (model:get-object-by-number id) {angle} {axis_type} {object_ref_flag} {copy_object} {degrees_flag} (vector3d {custom_axis[0]} {custom_axis[1]}
          {custom_axis[2]}) (position3d {rotation_point[0]} {rotation_point[1]} {rotation_point[2]}))""" 
         
         self.add_function(get_id + text)

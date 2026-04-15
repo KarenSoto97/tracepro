@@ -1,18 +1,15 @@
 [project]
 name = "tracepro"
-version = "0.1.0"
-description = "A Python wrapper for TracePro’s macro language, enabling programmatic control of TracePro simulations and automation workflows."
-readme = "README.md"
+version = "0.1"
+description = "Internal Python utilities for automating TracePro via COM and Scheme macros"
 requires-python = ">=3.9"
-dependencies = []
+dependencies = [
+    "numpy",
+    "pandas",
+    "matplotlib"
+]
 
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
-
-[tool.setuptools]
-# No package-dir needed if your code is in a folder named "tracepro"
-# directly inside the project root.
-
-[tool.setuptools.packages.find]
-where = ["."]
+``

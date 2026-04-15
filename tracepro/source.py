@@ -32,18 +32,15 @@ class Source:
             text (str): Scheme code fragment to append to the macro file.
         """
         
-        if analysis_mode:
-            analysis_mode = "on"
-        else:
-            analysis_mode = "off"
+        analysis_flag = "on" if analysis_mode else "off"
 
-        texto = f"""
+        text = f"""
         
         ; Raytrace
-        (raytrace:set-analysis-mode-{analysis_mode})
+        (raytrace:set-analysis-mode-{analysis_flag})
         (raytrace:all-sources)"""
 
-        return texto
+        return text
 
     def add_grid_source(self):
 
@@ -154,7 +151,7 @@ class Source:
         return text
     
 
-    def grid_rotation(self, angle: int, axis: int, rotation_point: tuple[float, float, float], object_ref: bool):
+    def grid_rotation(self, angle: float, axis: int, rotation_point: tuple[float, float, float], object_ref: bool):
 
         """
         Rotate the selected grid source around a specified axis.
@@ -185,17 +182,17 @@ class Source:
             direction = (0, 1, 0)
         elif axis == 2:
             direction = (0, 0, 1)
-
-        if object_ref:
-            object_ref = "#t"
         else:
-            object_ref = "#f"
+            raise ValueError("axis must be 0 (X), 1 (Y) or 2 (Z)")
+
+
+        object_ref_flag = "#t" if object_ref else "#f"
 
         text = f"""
 
         ; Grid source rotation:
         (edit:rotate-grid-source "{self.name}" {rotation_point[0]} {rotation_point[1]} {rotation_point[2]} {direction[0]} {direction[1]} {direction[2]} 
-        {angle} #f {object_ref})"""
+        {angle} #f {object_ref_flag})"""
 
         return text
 
@@ -263,6 +260,8 @@ class Source:
             text (str): Scheme code fragment to append to the macro file.
         """
 
+        # Discrete sources and surface sources require different Scheme commands.
+
         if "sourceID" in self.source_ID:
 
             text = f"""
@@ -300,11 +299,7 @@ class Source:
             text (str): Scheme code fragment to append to the macro file.
         """
 
-        if smooth:
-            smooth = "#t"
-        else:
-            smooth = "#f"
-
+        smooth_flag = "#t" if smooth else "#f"
 
         text = f"""
         
@@ -313,7 +308,7 @@ class Source:
         (analysis:irradiance-ray-type "{ray_type}")
         (analysis:irradiance-color-map {colormap})
         (analysis:irradiance-buckets {bucket})
-        (analysis:irradiance-smooth {smooth})
+        (analysis:irradiance-smooth {smooth_flag})
         (analysis:irradiance) ;; Display an irradiance map for the current model."""
 
         return text
