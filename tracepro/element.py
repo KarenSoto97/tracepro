@@ -13,7 +13,7 @@ class Element:
 
 
     def lens(self, thickness: float, r1: tuple[str, float], r2: tuple[str, float], aperture: tuple[str, float], obstruction: tuple[str, float], material: tuple[str, str], surf_1_pos: tuple[float, float, float], 
-             surf_1_tilt: tuple[float, float, float], surf_2_pos: tuple[float, float, float], surf_2_tilt: tuple[float, float, float], degrees: bool):
+             surf_1_tilt: tuple[float, float, float] = (0, 0, 0), surf_2_pos: tuple[float, float, float] = (0, 0, 0), surf_2_tilt: tuple[float, float, float] = (0, 0, 0), degrees: bool = True):
     
         """
         Creates a lens in TracePro.
@@ -23,12 +23,12 @@ class Element:
             r1 (str, float): First surface shape and radius. Example: ("sphere", 15).
             r2 (str, float): Second surface shape and radius. Example: ("plane", "").
             aperture (str, float): Aperture type and size of the lens. Example: ("circle", "12").
-            obstruction (str, float): Obstruction type and size. Example: ("ellipse", 4).
+            obstruction (str, float): Obstruction type and size. Example: ("ellipse", 4), ("none", "").
             material (str, str): Manufacturer and material. Example: ("SCHOTT", "BK7").
             surf_1_pos (float, float, float): Position of the first surface (x, y, z).
             surf_1_tilt (float, float, float): Tilt of the first surface (x, y, z).
-            surf_2_pos (float, float, float): Position of the second surface (x, y, z).
-            surf_2_tilt (float, float, float): Tilt of the second surface (x, y, z).
+            surf_2_pos (float, float, float): Decenter of the second surface relative to first (x, y, z).
+            surf_2_tilt (float, float, float): Tilt of the second surface relative to first (x, y, z).
             degrees (bool): If True, tilts are given in degrees. If False, in radians.
 
         Returns:
@@ -41,8 +41,8 @@ class Element:
         
         ; New lens: 
         (define {self.name}
-        (geometry:lens-element-2 "{material[0]}" "{material[1]}" {thickness} "{r1[0]}" (list {r1[1]}) "{r2[0]}" (list {r2[1]}) "{aperture[0]}" 
-        {aperture[1]} "{obstruction[0]}" (list {obstruction[1]}) (position3d {surf_1_pos[0]} {surf_1_pos[1]} {surf_1_pos[2]}) {surf_1_tilt[0]} 
+        (geometry:lens-element-2 "{material[0]}" "{material[1]}" {thickness} "{r1[0]}" {r1[1]} "{r2[0]}" {r2[1]} "{aperture[0]}" 
+        {aperture[1]} "{obstruction[0]}" {obstruction[1]} (position3d {surf_1_pos[0]} {surf_1_pos[1]} {surf_1_pos[2]}) {surf_1_tilt[0]} 
         {surf_1_tilt[1]} {surf_1_tilt[2]} (position3d {surf_2_pos[0]} {surf_2_pos[1]} {surf_2_pos[2]}) {surf_2_tilt[0]} {surf_2_tilt[1]}
         {surf_2_tilt[2]} {degrees_flag} "{self.name}"))"""
         

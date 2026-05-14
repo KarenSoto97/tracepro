@@ -5,7 +5,7 @@ Irradiance Map Data for C:\Software\tracepro\examples\results\lens_example\ejemp
 Linear Units in millimeters
 Map Units in W/m²
 Data for Detector Plano de deteccion
-Data generated at 14:53:23 April 15, 2026
+Data generated at 16:05:15 May 14, 2026
 
 Raytrace Time: mins: 0, secs: 0
 
