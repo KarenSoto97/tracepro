@@ -98,3 +98,43 @@ class Element:
             
         return text
     
+    def elliptical_tube(self, length: float, thickness: float, base_major_radius: float, base_minor_radius: float, top_radius: int, center: tuple[float, float, float], 
+                        close_bottom: bool = False, close_top: bool = False, rotation: tuple[float, float, float] = (0, 0, 0)):
+        
+        """
+        Creates an elliptical tube aligned with the global Z axis. The length, wall thickness, 
+        and base radii are mandatory parameters. The tube can be cylindrical or tapered 
+        depending on the top radius (or scaling factor) provided.
+
+        Args:
+            length (float): Length of the tube.
+            thickness (float): Wall thickness of the tube. If no thickness is desired, 
+                a small value such as 0.01 is recommended.
+            base_major_radius (float): Major radius of the base ellipse. If equal to the minor radius,
+                the base section becomes circular.
+            base_minor_radius (float): Minor radius of the base ellipse.
+            top_radius (float): Top radius or scaling factor applied to the base radii. 
+                For circular bases it behaves as a true radius, while for elliptical bases 
+                it scales both radii proportionally. Values smaller than the base produce 
+                a tapered (converging) tube.
+            center (tuple[float, float, float]): Tube center position (x, y, z).
+            close_bottom (bool): If True, the bottom surface will be closed.
+            close_top (bool): If True, the top surface will be closed.
+            rotation (tuple[float, float, float]): Rotation angles of the tube in radians (x, y, z).
+
+        Returns:
+            text (str): Scheme code fragment to append to the macro file.
+        """
+
+        close_bottom_flag = '#t' if close_bottom else '#f'
+        close_top_flag = '#t' if close_top else '#f'
+
+        text = f"""
+        
+        ; New elliptical tube: 
+        (define {self.name}
+        (geometry:elliptical-tube {length} {thickness} {base_major_radius} {base_minor_radius} {top_radius}
+        (position3d {center [0]} {center[1]} {center[2]}) {rotation[0]} {rotation[1]} {rotation[2]} {close_bottom_flag} {close_top_flag}))
+        (property:apply-name {self.name} "{self.name}")"""
+        
+        return text
