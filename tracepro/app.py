@@ -566,6 +566,31 @@ class TP_app:
 
         self.add_function(get_id + text)
 
+    def boolean_operations(self, target_object: str, tool_object: str, operation: int):
+
+        """
+        Perform a boolean operation between two objects. The first acts as the
+        target object and the second as the tool.
+
+        Args:
+            target_object (str): Name of the object receiving the boolean operation.
+            tool_object (str): Name of the tool object used to modify the target.
+            operation (int): Boolean operation type 1: intersection, 2: subtraction, 3: union.
+        """
+
+        if operation == 1:
+            operation_str = 'intersect'
+        elif operation == 2:
+            operation_str = 'subtract'
+        else:
+            operation_str = 'unite'
+
+        text = f"""
+
+        ; Boolean operations:
+        (edit:boolean-{operation_str} (entity:get-by-name "{target_object}") (entity:get-by-name "{tool_object}"))"""
+
+        self.add_function(text)
 
     def import_piece(self, file_path: str):
 
