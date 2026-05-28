@@ -313,3 +313,134 @@ class Source:
 
         return text
 
+    
+    def candela_iso(self, plot_type: str, half_angle: int, ray_type: str, flux_units: int = 0, normal_vector: tuple[float, float, float] = (0, 1, 0),
+                up_vector: tuple[float, float, float] = (0, 1, 0), log: bool = False, smooth: bool = False, contour: bool = False, gradient_display: bool = False):
+        
+        # TODO: Consider splitting 'candela_iso' into 'candela_iso_polar' and 'candela_iso_rectangular'
+        # to handle plot-specific parameters more cleanly.
+
+        """
+        Creates a candela iso plot. It can be polar or rectangular.
+
+        Args:
+            plot_type (str): Type of candela iso plot. Can be 'rectangular' or 'polar'.
+            half_angle (int): Sets the half angle for the iso candela plot.
+            ray_type (str): Sets the ray selection for the candela iso plots.
+                Possible values: "missed", "exiting" or "incident".
+            flux_units (int): Sets the units for candela iso plots.
+                Possible values:
+                    0 - W/sr
+                    1 - mW/sr
+                    2 - kW/sr
+                    3 - MW/sr
+                    4 - mcd
+                    5 - cd
+                    6 - cd/klm
+            normal_vector (tuple[float, float, float]): Normal vector that defines the polar origin (x, y, z).
+            up_vector (tuple[float, float, float]): Up vector that defines the plot orientation (x, y, z).
+            log (bool): Enables logarithmic scale for the candela iso plot.
+            smooth (bool): Smooths the irradiance map.
+            contour (bool): Enables contour plot (only for polar iso-candela).
+            gradient_display (bool): Enables gradient display (only for polar iso-candela).
+
+        Returns:
+            str: Scheme code fragment to append to the macro file.
+        """
+
+        if plot_type not in {'polar', 'rectangular'}:
+            raise ValueError("plot_type must be 'polar' or 'rectangular'")
+
+        if ray_type not in {'missed', 'exiting', 'incident'}:
+            raise ValueError("ray_type must be 'missed', 'exiting' or 'incident'")
+
+        log_tag = '#t' if log else '#f'
+        smooth_tag = '#t' if smooth else '#f'
+        contour_tag = '#t' if contour else '#f'
+        gradient_display_tag = '#t' if gradient_display else '#f'
+
+        text = f"""
+            
+            ; Candela iso {plot_type}
+            (analysis:candela-{plot_type}-iso)
+            (analysis:candela-{plot_type}-angular-width {half_angle})
+            (analysis:candela-ray-type "{ray_type}")
+            (analysis:candela-{plot_type}-flux-units {flux_units})
+            (analysis:candela-{plot_type}-log-plot {log_tag})
+            (analysis:candela-{plot_type}-smooth {smooth_tag})
+            (analysis:candela-{plot_type}-max #f 0)
+            (analysis:candela-{plot_type}-min #f 0)
+            (analysis:candela-normal (vector3d {normal_vector[0]} {normal_vector[1]} {normal_vector[2]}))
+            (analysis:candela-up (vector3d {up_vector[0]} {up_vector[1]} {up_vector[2]}))
+            (analysis:candela-{plot_type}-contour {contour_tag})
+            (analysis:candela-{plot_type}-gradient-display {gradient_display_tag})"""
+
+        return text
+    
+    def candela_distribution(self, plot_type: str, half_angle: int, ray_type: str, flux_units: int = 0, normal_vector: tuple[float, float, float] = (0, 1, 0),
+                         up_vector: tuple[float, float, float] = (1, 0, 0), horizontal_angles: int = 4, log: bool = False, smooth: bool = False, 
+                         luminaire: (bool) = False):
+
+        """
+        Creates a candela distribution plot. It can be polar or rectangular.
+
+        Args:
+            plot_type (str): Type of candela distribution plot. Can be 'rectangular' or 'polar'.
+            half_angle (int): Sets the half angle for the distribution.
+            ray_type (str): Sets the ray selection for the candela plots.
+                Possible values: "missed", "exiting" or "incident".
+            flux_units (int): Sets the units for candela distribution plots.
+                Possible values:
+                    0 - W/sr
+                    1 - mW/sr
+                    2 - kW/sr
+                    3 - MW/sr
+                    4 - mcd
+                    5 - cd
+                    6 - cd/klm
+            normal_vector (tuple[float, float, float]): Normal vector that defines the polar origin (x, y, z).
+            up_vector (tuple[float, float, float]): Up vector that defines the polar origin (x, y, z).
+            horizontal_angles (int): Number of horizontal photometric sections used to sample the candela distribution.
+            log (bool): Enables logarithmic scale for the candela distribution.
+            smooth (bool): Smooths the irradiance map.
+            luminaire (bool, int): Enables luminaire plot.
+                Note: This option is only effective when plot_type='polar'.
+                It is ignored for 'rectangular' plots.
+
+        Returns:
+            str: Scheme code fragment to append to the macro file.
+        """
+        
+        if plot_type not in {'polar', 'rectangular'}:
+            raise ValueError("plot_type must be 'polar' or 'rectangular'")
+
+        if ray_type not in {'missed', 'exiting', 'incident'}:
+            raise ValueError("ray_type must be 'missed', 'exiting' or 'incident'")
+
+        log_tag = '#t' if log else '#f'
+        smooth_tag = '#t' if smooth else '#f'
+        luminaire_tag = '#t' if luminaire else '#f'
+
+        text = f"""
+            
+            ; Candela {plot_type} distribution
+            (analysis:candela-{plot_type}-distribution)
+            (analysis:candela-distribution {horizontal_angles} {smooth_tag} 360 {luminaire_tag})
+            (analysis:candela-ray-type "{ray_type}")
+            (analysis:candela-distribution-flux-units {flux_units})
+            (analysis:candela-distribution-log-plot {log_tag})
+            (analysis:candela-distribution-max #f 0)
+            (analysis:candela-distribution-min #f 0)
+            (analysis:candela-distribution-{plot_type} {half_angle})
+            (analysis:candela-normal (vector3d {normal_vector[0]} {normal_vector[1]} {normal_vector[2]}))
+            (analysis:candela-up (vector3d {up_vector[0]} {up_vector[1]} {up_vector[2]}))
+            """
+
+        if luminaire:
+            text += f"""
+            (analysis:candela-distribution-luminaire {half_angle})
+            """
+
+        return text
+
+
