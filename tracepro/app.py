@@ -229,8 +229,12 @@ class TP_app:
         Args:
             save_path (str): Path to the folder where the irradiance map will be saved.
             file_name (str): Name of the irradiance map file.
-            extension (str): File extension for the saved map ("txt", "bmp", "jpg", "png", "dxf").
+            extension (str): File extension for the saved map. Supported values: ("txt", "bmp", "jpg", "png", "dxf").
         """
+
+        valid_extensions = {"txt", "bmp", "jpg", "png", "dxf"}
+        if extension.lower() not in valid_extensions:
+                raise ValueError(f"Unsupported extension '{extension}'.")
         
         save_path = save_path.replace("\\", "/")
         irradiance_map_path = f"{save_path}/{file_name}.{extension}"
@@ -239,6 +243,51 @@ class TP_app:
         
         ; Save irradiance analysis
         (analysis:irradiance-save "{irradiance_map_path}")"""
+
+        self.add_function(text)
+
+    def save_candela_plot(self, candela_plot_type: int, save_path: str, file_name: str, extension: str):
+
+        """
+        Saves the candela plot
+
+        Args:
+        candela_plot_type (int): Type of candela plot:
+            1 -> "polar-iso"
+            2 -> "rectangular-iso"
+            3 -> "polar-distribution"
+            4 -> "rectangular-distribution"
+        save_path (str): Directory where the plot will be saved.
+        file_name (str): Output file name (without extension).
+        extension (str): File extension. Supported values: ("txt", "bmp", "jpg", "png").
+        """
+        candela_plot = ""
+
+        if candela_plot_type == 1:
+            candela_plot = 'polar-iso'
+        elif candela_plot_type == 2:
+            candela_plot = 'rectangular-iso'
+        elif candela_plot_type == 3:
+            candela_plot = 'polar-distribution'
+        elif candela_plot_type == 4:
+            candela_plot = 'rectangular-distribution'
+
+        if candela_plot_type < 1 or candela_plot_type > 4:
+            raise KeyError("plot_type must be an integer between 1 and 4.")
+        
+        valid_extensions = {"txt", "bmp", "jpg", "png"}
+        if extension.lower() not in valid_extensions:
+                raise ValueError(f"Unsupported extension '{extension}'.")
+
+        save_path = save_path.replace("\\", "/")
+        candela_plot_path = f"{save_path}/{file_name}.{extension}"
+
+        extension = 'bmp' if extension == 'jpg' or extension == 'png' else extension
+
+        text = f"""
+        
+        ; Save candela plot
+        (analysis:candela-save-{extension} "{candela_plot}" "{candela_plot_path}")"""
 
         self.add_function(text)
 
