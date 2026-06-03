@@ -2,6 +2,7 @@
 import win32com.client as win32
 import os
 import numpy as np
+import pandas as pd
 
 class TP_app:
     
@@ -23,6 +24,24 @@ class TP_app:
         self.tp = win32.Dispatch("TracePro.TraceProXP")
 
     @classmethod
+    def __first_line_num_data(cls, lines: list):
+
+            """
+            Find the index of the first line containing numerical data.
+
+            Args:
+                lines (list): List of lines read from the text file.
+
+            Returns:
+                int | None: Index of the first data line, or None if not found.
+            """
+
+            for i, linea in enumerate(lines):
+                if linea.strip() and linea.lstrip()[0].isdigit():
+                    return  i
+            return None
+
+    @classmethod
     def txt_map2array(cls, txt_path: str, num_files: int, file_name: str | list):
 
         """
@@ -39,7 +58,7 @@ class TP_app:
         Args:
             txt_path (str): Path to the directory containing the .txt file(s).
             num_file (int): Number of files to load. If 1, a 2D array is returned. If greater than 1, a 3D array is returned
-            file_name (str): Name of the file (without extension) if num_files == 1, or a list of file names if num_files > 
+            file_name (str): Name of the file (without extension) if num_files == 1, or a list of file names if num_files > 1.
 
         Returns:
             irradiance_maps (np.ndarray):
@@ -47,23 +66,6 @@ class TP_app:
             - Shape (128, 128, num_files) if num_files > 1
         """
 
-        def first_line_num_data(lines: list):
-
-            """
-            Find the index of the first line containing numerical data.
-
-            Args:
-                lines (list): List of lines read from the text file.
-
-            Returns:
-                int | None: Index of the first data line, or None if not found.
-            """
-
-            for i, linea in enumerate(lines):
-                if linea.strip() and linea.lstrip()[0].isdigit():
-                    return  i
-            return None
-            
         if num_files == 1:
 
             irradiance_map = np.zeros([128, 128])
@@ -71,7 +73,7 @@ class TP_app:
             with open(f"{txt_path}/{file_name}.txt", "r") as f:
                 lineas = f.readlines()
 
-            start_idx = first_line_num_data(lineas)
+            start_idx = cls.__first_line_num_data(lineas)
             data = np.loadtxt(lineas[start_idx:])
 
             irradiance_map[:,:] = data
@@ -86,12 +88,81 @@ class TP_app:
                 with open(f"{txt_path}/{file}.txt", "r") as f:
                     lineas = f.readlines()
 
-                start_idx = first_line_num_data(lineas)
+                start_idx = cls.__first_line_num_data(lineas)
                 data = np.loadtxt(lineas[start_idx:])
 
                 irradiance_maps[:, :, i] = data
             
             return irradiance_maps
+
+    @classmethod
+    def txt_candela_distribution2array(cls, txt_path: str, num_files: int, file_name: str | list, horizontal_angles: int = 4):
+
+        """
+        Load candela distribution data from one or more photometric .txt files and
+        return the intensity matrix together with the vertical and horizontal angle grids.
+
+        Args:
+            txt_path (str): Directory containing the .txt file(s).
+            num_files (int): Number of files to load.
+            file_name (str | list): File name (str) or list of names (without extension).
+            horizontal_angles (int): Number of horizontal photometric sections
+                (total columns = horizontal_angles * 2).
+
+        Returns:
+            matrix (np.ndarray): Candela values.
+                - (N_vertical, N_horizontal) for one file
+                - (N_vertical, N_horizontal, num_files) for multiple files
+            degrees_index (np.ndarray): Vertical angles in degrees (rounded to 2 decimals).
+            horizontal_angles_index (np.ndarray): Horizontal angle grid.
+
+        Note:
+        This implementation is only valid for Polar and Rectangular distributions.
+        It is not applicable to Candela IES (isolux / iso-candela) distributions.
+        """
+        
+        if num_files == 1:
+            
+            file = f"{txt_path}/{file_name}.txt"
+
+            with open(file, "r") as f:
+                lineas = f.readlines()
+
+            start_idx = cls.__first_line_num_data(lineas)
+
+            df = pd.read_csv(file, skiprows=start_idx, sep=r'\s+', index_col=0)
+
+            horizontal_angles_index = df.columns.to_numpy()
+            degrees_index = df.index.to_numpy()
+            degrees_index = np.round(degrees_index.astype(float), 2)
+            matrix = df.to_numpy()
+
+            return matrix, degrees_index, horizontal_angles_index
+        
+        elif num_files > 1:
+
+            rows = 1025
+            columns = horizontal_angles * 2
+
+            matrix = np.zeros([rows, columns, num_files])
+            degrees_index = np.zeros([rows, num_files])
+            
+            for i, name in enumerate(file_name):
+
+                file = f"{txt_path}/{name}.txt"
+                with open(file, "r") as f:
+                    lineas = f.readlines()
+
+                start_idx = cls.__first_line_num_data(lineas)
+
+                df = pd.read_csv(file, skiprows=start_idx, sep=r'\s+', index_col=0)
+                matrix[:, :, i] = df.to_numpy()
+                col = df.index.to_numpy().astype(float)
+                degrees_index[:, i] = np.round(col, 2)
+
+            horizontal_angles_index = df.columns.to_numpy()
+                
+            return matrix, degrees_index, horizontal_angles_index
 
     def clear_macro(self):
 
