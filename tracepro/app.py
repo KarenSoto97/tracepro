@@ -620,13 +620,13 @@ class TP_app:
             text = f"""
             
         ; Apply property:
-        (property:apply-surface (tools:face-in-body {surface_num} (model:get-object-by-number id)) (list "{property[1].capitalize()}" "{property[0].capitalize()}"))"""
+        (property:apply-surface (tools:face-in-body {surface_num} (model:get-object-by-number id)) (list "{property[1]}" "{property[0]}"))"""
         else:
 
             text = f"""
             
         ; Apply property:
-        (property:apply-surface (model:get-object-by-number id) (list "{property[1].capitalize()}" "{property[0].capitalize()}"))"""
+        (property:apply-surface (model:get-object-by-number id) (list "{property[1]}" "{property[0]}"))"""
 
         self.add_function(get_id + text)
 
@@ -727,6 +727,29 @@ class TP_app:
         
         ; Import:
         (file:open "{file_path}")"""
+
+        self.add_function(text)
+
+    def create_group(self, object_names: list, group_name: str):
+
+        """
+        Create a group of objects.
+
+        Args:
+        object_names (list): list of the objects names that will be included in the group.
+        group_name (str): Name of the group.
+        """
+
+        text = f"""
+        
+        ; Group of objects:
+       (edit:create-new-object-group "{group_name}")"""
+        
+        for object_name in object_names:
+
+            text_1 = f"""
+            (edit:move-into-group (entity:get-by-name "{object_name}") "{group_name}")"""
+            text += text_1
 
         self.add_function(text)
 
