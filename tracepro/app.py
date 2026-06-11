@@ -754,35 +754,53 @@ class TP_app:
         self.add_function(text)
 
 
-    def move_object(self, object_name: str, mode: str, distance: tuple[float, float, float]): 
+    def move_object(self, object_name: str | list, mode: str, distance: tuple[float, float, float]): 
 
         """
         Moves the selected object.
 
         Args:
-            object_name (str): Name of the object.
+            object_name (str | list): Name of the object/s.
             mode (str): Movement mode, either "relative" or "absolute".
             distance (float, float, float): Translation distance (x, y, z).
         """
-
-        get_id = self.__get_id(object_name=object_name)
-
         if mode == "absolute":
-            mode = "#f"
+                mode = "#f"
         elif mode == "relative":
             mode = "#t"
         else:
             raise ValueError("mode must be 'absolute' or 'relative'")
-   
-        text = f"""
-            
-        ; Move object:
-        (edit:move (model:get-object-by-number id) {distance[0]} {distance[1]} {distance[2]} #f {mode} )""" 
 
-        self.add_function(get_id + text)
+        if type(object_name) == str:
 
+            get_id = self.__get_id(object_name=object_name)
 
-    def rotate_object(self, object_name: str, angle: float, axis_type: int, degrees: bool, rotation_point: tuple[float, float, float], object_ref: bool, 
+            text = f"""
+                
+            ; Move object:
+            (edit:move (model:get-object-by-number id) {distance[0]} {distance[1]} {distance[2]} #f {mode} )""" 
+
+            self.add_function(get_id + text)
+
+        else:
+        
+            text_1 = ''
+        
+            for obj in object_name:
+
+                text_2 = f"""
+                (entity:get-by-name "{obj}")"""
+
+                text_1 += text_2
+
+            text = f"""
+                
+            ; Move object:
+            (edit:move (list {text_1}) {distance[0]} {distance[1]} {distance[2]} #f {mode} )"""
+
+            self.add_function(text)
+
+    def rotate_object(self, object_name: str | list , angle: float, axis_type: int, degrees: bool, rotation_point: tuple[float, float, float], object_ref: bool, 
                        custom_axis: tuple[int, int, int] = (1, 0, 0)):
 
         """
@@ -797,7 +815,7 @@ class TP_app:
         reference system. Note that object_ref only affects the position of the axis, not its direction.
 
         Args:
-            object_name (str): Name of the object.
+            object_name (str| list): Name of the object/s.
             angle (float): Angle of rotation about the axis. The angle is interpreted as degrees or radians depending on the value of degrees.
             axis_type (int): Controls the direction of the rotational axis.
                 0: rotation about global X axis.
@@ -816,22 +834,41 @@ class TP_app:
             This parameter is ignored when axis_type is not 6.
         """
 
-        get_id = self.__get_id(object_name=object_name)
-
         degrees_flag = "#t" if degrees else "#f" 
 
         object_ref_flag = "#t" if object_ref else "#f"
 
         copy_object = "#f"
 
-        text = f"""
+        if type(object_name) == str:
+
+            get_id = self.__get_id(object_name=object_name)
+
+            text = f"""
+                
+            ; Rotate object:
+            (edit:rotate-objects (model:get-object-by-number id) {angle} {axis_type} {object_ref_flag} {copy_object} {degrees_flag} (vector3d {custom_axis[0]} {custom_axis[1]}
+            {custom_axis[2]}) (position3d {rotation_point[0]} {rotation_point[1]} {rotation_point[2]}))""" 
             
-        ; Rotate object:
-        (edit:rotate-objects (model:get-object-by-number id) {angle} {axis_type} {object_ref_flag} {copy_object} {degrees_flag} (vector3d {custom_axis[0]} {custom_axis[1]}
-         {custom_axis[2]}) (position3d {rotation_point[0]} {rotation_point[1]} {rotation_point[2]}))""" 
+            self.add_function(get_id + text)
         
-        self.add_function(get_id + text)
+        else:
         
+            text_1 = ''
+        
+            for obj in object_name:
+
+                text_2 = f"""
+                (entity:get-by-name "{obj}")"""
+
+                text_1 += text_2
+
+            text = f"""
+                
+             ; Rotate object:
+            (edit:rotate-objects (list {text_1 }) {angle} {axis_type} {object_ref_flag} {copy_object} {degrees_flag} (vector3d {custom_axis[0]} {custom_axis[1]}
+            {custom_axis[2]}) (position3d {rotation_point[0]} {rotation_point[1]} {rotation_point[2]}))"""
+            self.add_function(text)
 
 
 
