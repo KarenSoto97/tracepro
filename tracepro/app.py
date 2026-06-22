@@ -21,7 +21,9 @@ class TP_app:
     def __init__(self, macro_path: str, macro_name: str = 'macro'):
         macro_path = os.path.normpath(macro_path).replace("\\", "/")
         self.macro = f"{macro_path}/{macro_name}.scm"
+        # Select TraceProXP for TracePro expert, TraceProST for TracePro standard
         self.tp = win32.Dispatch("TracePro.TraceProXP")
+        #self.tp = win32.Dispatch("TracePro.TraceProST")
 
     @classmethod
     def __first_line_num_data(cls, lines: list):
