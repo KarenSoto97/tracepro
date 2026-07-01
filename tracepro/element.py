@@ -98,6 +98,28 @@ class Element:
             
         return text
     
+    def sphere(self, radius: float, center: tuple[float, float, float]):
+    
+        """
+        Creates a sphere in TracePro.
+
+        Args:
+            radius (float): Radius of the sphere.
+            center (float, float, float): Block center position (x, y, z).
+
+        Returns:
+            text (str): Scheme code fragment to append to the macro file.
+        """
+
+        text = f"""
+
+        ; New sphere:
+        (define {self.name}
+        (geometry:sphere {radius}))
+        (property:apply-name {self.name} "{self.name}")"""
+            
+        return text
+    
     def elliptical_tube(self, length: float, thickness: float, base_major_radius: float, base_minor_radius: float, top_radius: int, center: tuple[float, float, float], 
                         close_bottom: bool = False, close_top: bool = False, rotation: tuple[float, float, float] = (0, 0, 0)):
         
