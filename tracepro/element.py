@@ -1,3 +1,6 @@
+import numpy as np
+
+
 class Element:
 
     """
@@ -42,7 +45,7 @@ class Element:
         ; New lens: 
         (define {self.name}
         (geometry:lens-element-2 "{material[0]}" "{material[1]}" {thickness} "{r1[0]}" {r1[1]} "{r2[0]}" {r2[1]} "{aperture[0]}" 
-        {aperture[1]} "{obstruction[0]}" {obstruction[1]} (position3d {surf_1_pos[0]} {surf_1_pos[1]} {surf_1_pos[2]}) {surf_1_tilt[0]} 
+        {f'(list {aperture[1]})'} "{obstruction[0]}" {f'(list {obstruction[1]})'} (position3d {surf_1_pos[0]} {surf_1_pos[1]} {surf_1_pos[2]}) {surf_1_tilt[0]} 
         {surf_1_tilt[1]} {surf_1_tilt[2]} (position3d {surf_2_pos[0]} {surf_2_pos[1]} {surf_2_pos[2]}) {surf_2_tilt[0]} {surf_2_tilt[1]}
         {surf_2_tilt[2]} {degrees_flag} "{self.name}"))"""
         
@@ -160,3 +163,75 @@ class Element:
         (property:apply-name {self.name} "{self.name}")"""
         
         return text
+
+    def _polygon_vertices(self, num_sides: int, radius: float, center: tuple[float, float] = (0, 0)):
+    
+        """
+        Generates the XY coordinates of a regular polygon.
+
+        Args:
+            num_sides (int): Number of polygon sides.
+            radius (float): Circumradius of the polygon.
+            center (tuple[float, float]): Polygon center (x, y).
+
+        Returns:
+            list[tuple[float, float]]: Vertex coordinates in counterclockwise order.
+        """
+
+        cx, cy = center
+
+        vertices = []
+
+        for i in range(num_sides):
+            angle = np.pi / 2 + 2 * np.pi * i / num_sides
+
+            x = cx + radius * np.cos(angle)
+            y = cy + radius * np.sin(angle)
+
+            vertices.append((x, y))
+
+        return vertices
+    
+
+    def polygon_3D(self, num_sides: int, radius: float, height: float, material: tuple[str, str], position: tuple[float, float, float] = (0, 0, 0), wall_thickness: float = None,
+                   rotation: tuple[float, float, float] = (0, 0, 0)):
+
+        """
+        Creates a 3D polygonal prism along the z axis.
+
+        Args:
+            num_sides (int): Number of sides of the polygon.
+            radius (float): Circumradius of the polygon base, measured from the center to any vertex.
+            height (float): Height of the prism along its extrusion axis (z).
+            material (str, str): Manufacturer and material. Example: ("SCHOTT", "BK7").
+            position (tuple[float, float, float]): Center position of the polygon in (x, y, z).
+            wall_thickness (float | None): Wall thickness of the prism. If None, the polygon is created as a solid prism. 
+            If a value is provided, a hollow polygon is created with the specified wall thickness.
+            rotation (tuple[float, float, float]): Rotation angles of the tube in degrees (x, y, z). A rotation of (0, 0, 0) creates the prism with its
+            extrusion axis aligned with the global Z axis.
+
+        Returns:
+            text (str): Scheme code fragment to append to the macro file.
+        """
+
+        outer_vertices = self._polygon_vertices(num_sides=num_sides, radius=radius, center=(position[0], position[1]))
+        outer_vertices_string = " ".join(str(value) for vertex in outer_vertices for value in vertex)
+
+        obstruction = ("none", "")
+       
+        if wall_thickness:
+            
+            assert wall_thickness < radius
+
+            inner_vertices = self._polygon_vertices(num_sides=num_sides, radius=(radius - wall_thickness), center=(position[0], position[1]))
+            inner_vertices_string = " ".join(str(value) for vertex in inner_vertices for value in vertex)
+            obstruction = ("polygon", inner_vertices_string)
+       
+        text = self.lens(thickness=height, r1=("plane", ""), r2=("plane", ""), aperture=("polygon", outer_vertices_string), 
+                            obstruction=obstruction, material=material, surf_1_pos=position, surf_1_tilt=rotation)
+
+        return text
+        
+       
+
+        
