@@ -108,7 +108,7 @@ class Element:
 
         Args:
             radius (float): Radius of the sphere.
-            center (float, float, float): Block center position (x, y, z).
+            center (float, float, float): Sphere center position (x, y, z).
 
         Returns:
             text (str): Scheme code fragment to append to the macro file.
@@ -119,9 +119,44 @@ class Element:
         ; New sphere:
         (define {self.name}
         (geometry:sphere {radius}))
-        (property:apply-name {self.name} "{self.name}")"""
+        (property:apply-name {self.name} "{self.name}")
+        
+        ; Move sphere:
+        (edit:move (entity:get-by-name "{self.name}") {center[0]} {center[1]} {center[2]} #f #f )"""
             
         return text
+
+
+    def spherical_reflector(self, radius: float, length: float, thickness: float, center: tuple[float, float, float] = (0, 0, 0), hole_radius: float = 0):
+
+        """
+        Creates a spherical reflector in TracePro.
+
+        Args:
+            radius (float): Outer radius of the spherical reflector.
+            length (float): Length of the reflector. If smaller than the sphere diameter, the reflector will be truncated.
+            thickness (float): Wall thickness of the reflector.
+            center (tuple[float, float, float]): Desired reflector center position (x, y, z). Internal corrections are applied to match the geometric center.
+            hole_radius (float): Radius of the optional hole at the top of the reflector. Set to 0 for a closed reflector.
+
+        Returns:
+            str: Scheme code fragment to append to the macro file.
+        """
+
+        center_z_corrected = center[2] - radius
+    
+        text = f"""
+
+        ; New spherical reflector:
+        (define {self.name}
+        (geometry:spherical-reflector 1 {thickness} {hole_radius} {radius} {length}))
+        (property:apply-name {self.name} "{self.name}")
+        
+        ; Move spherical reflector:
+        (edit:move (entity:get-by-name "{self.name}") {center[0]} {center[1]} {center_z_corrected} #f #f )"""
+
+        return text
+                    
     
     def elliptical_tube(self, length: float, thickness: float, base_major_radius: float, base_minor_radius: float, top_radius: int, center: tuple[float, float, float], 
                         close_bottom: bool = False, close_top: bool = False, rotation: tuple[float, float, float] = (0, 0, 0)):
@@ -193,42 +228,50 @@ class Element:
         return vertices
     
 
-    def polygon_3D(self, num_sides: int, radius: float, height: float, material: tuple[str, str], position: tuple[float, float, float] = (0, 0, 0), wall_thickness: float = None,
+    def polygon_3D(self, num_sides: int, radius: float, height: float, material: tuple[str, str], center: tuple[float, float, float] = (0, 0, 0), wall_thickness: float = None,
                    rotation: tuple[float, float, float] = (0, 0, 0)):
 
         """
-        Creates a 3D polygonal prism along the z axis.
+        Creates a 3D polygonal prism initially aligned with the global Z axis.
 
         Args:
             num_sides (int): Number of sides of the polygon.
             radius (float): Circumradius of the polygon base, measured from the center to any vertex.
             height (float): Height of the prism along its extrusion axis (z).
             material (str, str): Manufacturer and material. Example: ("SCHOTT", "BK7").
-            position (tuple[float, float, float]): Center position of the polygon in (x, y, z).
+            center(tuple[float, float, float]): Center position of the polygon in (x, y, z).
             wall_thickness (float | None): Wall thickness of the prism. If None, the polygon is created as a solid prism. 
             If a value is provided, a hollow polygon is created with the specified wall thickness.
-            rotation (tuple[float, float, float]): Rotation angles of the tube in degrees (x, y, z). A rotation of (0, 0, 0) creates the prism with its
-            extrusion axis aligned with the global Z axis.
+            rotation (tuple[float, float, float]): Rotation angles of the prism in degrees (x, y, z).
 
         Returns:
             text (str): Scheme code fragment to append to the macro file.
         """
 
-        outer_vertices = self._polygon_vertices(num_sides=num_sides, radius=radius, center=(position[0], position[1]))
+        outer_vertices = self._polygon_vertices(num_sides=num_sides, radius=radius, center=(center[0], center[1]))
         outer_vertices_string = " ".join(str(value) for vertex in outer_vertices for value in vertex)
 
         obstruction = ("none", "")
-       
+
         if wall_thickness:
             
             assert wall_thickness < radius
 
-            inner_vertices = self._polygon_vertices(num_sides=num_sides, radius=(radius - wall_thickness), center=(position[0], position[1]))
+            inner_vertices = self._polygon_vertices(num_sides=num_sides, radius=(radius - wall_thickness), center=(center[0], center[1]))
             inner_vertices_string = " ".join(str(value) for vertex in inner_vertices for value in vertex)
             obstruction = ("polygon", inner_vertices_string)
-       
+
+        center_z_corrected = center[2] - (height / 2)
+
         text = self.lens(thickness=height, r1=("plane", ""), r2=("plane", ""), aperture=("polygon", outer_vertices_string), 
-                            obstruction=obstruction, material=material, surf_1_pos=position, surf_1_tilt=rotation)
+                            obstruction=obstruction, material=material, surf_1_pos=[0, 0, 0], surf_1_tilt=rotation)
+
+        text_1 = f"""
+                        
+        ; Move polygon:
+        (edit:move (entity:get-by-name "{self.name}") {0} {0} {center_z_corrected} #f #f )"""
+
+        text += text_1
 
         return text
         
