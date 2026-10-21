@@ -1,4 +1,5 @@
 import numpy as np
+from shapely.geometry import Polygon
 
 
 class Element:
@@ -199,6 +200,61 @@ class Element:
         
         return text
 
+    def wedge(self, length: float, depth: float, angle: float, center: tuple[float, float, float]):
+
+        """
+        Generates a wedge by subtracting a rotated block from a base block.
+
+        The wedge is defined by its length along the Z axis, depth along
+        the X axis and wedge angle in the YZ plane.
+
+        Args:
+            length (float): Length of the wedge along the Z axis.
+            depth (float): Depth of the wedge along the X axis.
+            angle (float): Wedge angle in degrees.
+            center (tuple[float, float, float]): Center coordinates (x, y, z) of the base block.
+
+        Returns:
+            str:TracePro macro text required to generate the wedge geometry.
+        """
+
+        name = self.name
+
+        # Block 1
+
+        angle = np.deg2rad(angle)
+        height = length * np.tan(angle) 
+        orientation_method = ("angles", (0, 0, 0), "")
+
+        text_block_1 = self.block(dimensions=(depth, height, length), center=center, orientation_method=orientation_method, degrees=False)
+
+        # Block 2
+
+        length_2 = length / np.cos(angle)
+        Delta_y = (height / 2) * np.cos(angle)
+        Delta_z = (height / 2) * np.sin(angle)
+
+        center_2 = (center[0], (center[1] + Delta_y), (center[2] + Delta_z)) 
+
+        rotation = (angle, 0, 0)
+        orientation_method = ("angles", rotation, "")
+
+        self.name = 'block_2'
+
+        text_block_2 = self.block(dimensions=(depth, height, length_2), center=center_2, orientation_method=orientation_method, degrees=False)
+
+        self.name = name
+
+        boolean_sub = f""" 
+        
+        ; Boolean operations:
+        (edit:boolean-subtract (entity:get-by-name "{name}") (entity:get-by-name "block_2"))"""
+
+        text = text_block_1 + text_block_2 + boolean_sub
+
+        return text
+
+
     def _polygon_vertices(self, num_sides: int, radius: float, center: tuple[float, float] = (0, 0)):
     
         """
@@ -226,50 +282,92 @@ class Element:
             vertices.append((x, y))
 
         return vertices
-    
 
+    def _offset_polygon(self, vertices: list[tuple[float, float]], offset: float):
+        """
+        Generates an offset version of a polygon by expanding or contracting
+        its boundary using a geometric buffer operation.
+
+        Args:
+            vertices (list[tuple[float, float]]): Original polygon vertices in order.
+            offset (float): Offset distance. Positive values expand the polygon,
+                negative values contract it.
+
+        Returns:
+            list[tuple[float, float]]: Coordinates of the offset polygon boundary
+                in counterclockwise order.
+        """
+
+        polygon = Polygon(vertices)
+
+        polygon_offset = polygon.buffer(offset, join_style=2)
+
+        return list(polygon_offset.exterior.coords)[:-1]
+
+    
     def polygon_3D(self, num_sides: int, radius: float, height: float, material: tuple[str, str], center: tuple[float, float, float] = (0, 0, 0), wall_thickness: float = None,
-                   rotation: tuple[float, float, float] = (0, 0, 0)):
+                   rotation: tuple[float, float, float] = (0, 0, 0), custom_vertices: list = None):
 
         """
         Creates a 3D polygonal prism initially aligned with the global Z axis.
 
         Args:
-            num_sides (int): Number of sides of the polygon.
+            num_sides (int): Number of sides of the polygon. Ignored if custom_vertices is provided.
             radius (float): Circumradius of the polygon base, measured from the center to any vertex.
+                Ignored if custom_vertices is provided.
             height (float): Height of the prism along its extrusion axis (z).
             material (str, str): Manufacturer and material. Example: ("SCHOTT", "BK7").
             center(tuple[float, float, float]): Center position of the polygon in (x, y, z).
-            wall_thickness (float | None): Wall thickness of the prism. If None, the polygon is created as a solid prism. 
-            If a value is provided, a hollow polygon is created with the specified wall thickness.
+            wall_thickness (float | None): Wall thickness of the prism. If None, the polygon is created as a solid prism.
+                If a value is provided, a hollow polygon is created with the specified wall thickness.
             rotation (tuple[float, float, float]): Rotation angles of the prism in degrees (x, y, z).
+            custom_vertices (list | None): Custom polygon vertices as [(x1, y1), (x2, y2), ...].
+                If provided, the polygon shape is defined by these vertices instead of num_sides and radius.
+                The vertices must be ordered around the polygon perimeter.
 
         Returns:
             text (str): Scheme code fragment to append to the macro file.
         """
 
-        outer_vertices = self._polygon_vertices(num_sides=num_sides, radius=radius, center=(center[0], center[1]))
-        outer_vertices_string = " ".join(str(value) for vertex in outer_vertices for value in vertex)
-
         obstruction = ("none", "")
+        center_z_corrected = center[2] - (height / 2)
 
         if wall_thickness:
-            
-            assert wall_thickness < radius
 
-            inner_vertices = self._polygon_vertices(num_sides=num_sides, radius=(radius - wall_thickness), center=(center[0], center[1]))
+            if custom_vertices:
+                inner_vertices = self._offset_polygon(vertices=custom_vertices, offset=-wall_thickness)
+
+            else:
+                    
+                assert wall_thickness < radius 
+    
+                inner_vertices = self._polygon_vertices(num_sides=num_sides, radius=(radius - wall_thickness), center=(center[0], center[1]))
+
             inner_vertices_string = " ".join(str(value) for vertex in inner_vertices for value in vertex)
             obstruction = ("polygon", inner_vertices_string)
 
-        center_z_corrected = center[2] - (height / 2)
+        if custom_vertices:
 
-        text = self.lens(thickness=height, r1=("plane", ""), r2=("plane", ""), aperture=("polygon", outer_vertices_string), 
-                            obstruction=obstruction, material=material, surf_1_pos=[0, 0, 0], surf_1_tilt=rotation)
+            outer_vertices_string = " ".join(str(value) for vertex in custom_vertices for value in vertex)
+            text = self.lens(thickness=height, r1=("plane", ""), r2=("plane", ""), aperture=("polygon", outer_vertices_string), 
+                                        obstruction=obstruction, material=material, surf_1_pos=[0,0, 0], surf_1_tilt=rotation)
 
-        text_1 = f"""
-                        
-        ; Move polygon:
-        (edit:move (entity:get-by-name "{self.name}") {0} {0} {center_z_corrected} #f #f )"""
+            text_1 = f"""
+                                    
+                    ; Move polygon:
+                    (edit:move (entity:get-by-name "{self.name}") {center[0]} {center[1]} {center_z_corrected} #f #f )"""
+
+        else:
+
+            outer_vertices = self._polygon_vertices(num_sides=num_sides, radius=radius, center=(center[0], center[1]))
+            outer_vertices_string = " ".join(str(value) for vertex in outer_vertices for value in vertex)
+            text = self.lens(thickness=height, r1=("plane", ""), r2=("plane", ""), aperture=("polygon", outer_vertices_string), 
+                                        obstruction=obstruction, material=material, surf_1_pos=[0, 0, 0], surf_1_tilt=rotation)
+
+            text_1 = f"""
+                            
+            ; Move polygon:
+            (edit:move (entity:get-by-name "{self.name}") {0} {0} {center_z_corrected} #f #f )"""
 
         text += text_1
 
