@@ -215,7 +215,7 @@ class Element:
             center (tuple[float, float, float]): Center coordinates (x, y, z) of the base block.
 
         Returns:
-            str:TracePro macro text required to generate the wedge geometry.
+            str: Scheme code fragment to append to the macro file.
         """
 
         name = self.name
@@ -284,6 +284,7 @@ class Element:
         return vertices
 
     def _offset_polygon(self, vertices: list[tuple[float, float]], offset: float):
+
         """
         Generates an offset version of a polygon by expanding or contracting
         its boundary using a geometric buffer operation.
